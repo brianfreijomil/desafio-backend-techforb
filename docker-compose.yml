@@ -1,0 +1,13 @@
+services:
+  db:
+    image: postgres
+    container_name: challenge_api_db_postgresql
+    restart: always
+    environment:
+      POSTGRES_DB: challenge-api-db
+      POSTGRES_USER: challengeuser
+      POSTGRES_PASSWORD: 5783317debaa3fded50671511fd164b7
+    ports:
+      - 5432:5432
+    volumes:
+      - .dbdata:/var/lib/postgresql
