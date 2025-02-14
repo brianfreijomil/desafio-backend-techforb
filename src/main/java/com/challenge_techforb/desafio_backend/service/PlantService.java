@@ -1,0 +1,195 @@
+package com.challenge_techforb.desafio_backend.service;
+
+import com.challenge_techforb.desafio_backend.controller.dto.request.PlantIn;
+import com.challenge_techforb.desafio_backend.controller.dto.response.AllSensorsReadingsStatsOut;
+import com.challenge_techforb.desafio_backend.controller.dto.response.PlantInfoOut;
+import com.challenge_techforb.desafio_backend.controller.dto.response.ReadingOut;
+import com.challenge_techforb.desafio_backend.controller.dto.response.SensorOut;
+import com.challenge_techforb.desafio_backend.exception.ConflictExistException;
+import com.challenge_techforb.desafio_backend.exception.ConflictPersistException;
+import com.challenge_techforb.desafio_backend.persistence.entity.*;
+import com.challenge_techforb.desafio_backend.persistence.repository.PlantRepository;
+import com.challenge_techforb.desafio_backend.persistence.repository.SummaryReadingsRepository;
+import com.challenge_techforb.desafio_backend.persistence.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerErrorException;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@RequiredArgsConstructor
+@Service
+public class PlantService {
+
+    private final SensorsService sensorsService;
+    private final PlantRepository plantRepository;
+    private final UserRepository userRepository;
+    private final SummaryReadingsRepository summaryReadingsRepository;
+
+    public PlantInfoOut getPlantDetailById(Long plantId) {
+        PlantEntity plant = this.plantRepository.findById(plantId)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontro la planta"));
+
+        return PlantInfoOut.builder()
+                .id(plant.getId())
+                .name(plant.getName())
+                .country(plant.getCountry())
+                .sensors(plant.getSensors().stream().map(SensorOut::new).collect(Collectors.toList()))
+                .build();
+    }
+
+    public List<PlantInfoOut> getAllPlants() {
+        return this.plantRepository.findAll().stream().map(plant -> PlantInfoOut.builder()
+                .id(plant.getId())
+                .name(plant.getName())
+                .country(plant.getCountry())
+                .build()).collect(Collectors.toList());
+    }
+
+    public List<PlantInfoOut> getAllPlantsByUser(String username) {
+        //Check user
+        UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
+
+        return this.plantRepository.findAllByUser(user).stream().map(plant -> PlantInfoOut.builder()
+                .id(plant.getId())
+                .name(plant.getName())
+                .country(plant.getCountry())
+                .build()).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PlantInfoOut createPlant(PlantIn input, String username) {
+        //check unique (plant - country)
+        Boolean existByNameAndCountry = this.plantRepository.existsByNameIgnoreCaseAndCountryIgnoreCase(input.getName(), input.getCountry());
+        if (existByNameAndCountry) throw new ConflictExistException("Ya existe una planta con el nombre: " + input.getName() + ", para el pais: " + input.getCountry());
+        //Check user
+        UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
+        //create plant
+        try {
+            PlantEntity newPlant = new PlantEntity(input.getName(),input.getCountry(),user);
+            //create initial sensors
+            newPlant.getSensors().addAll(this.sensorsService.createInitialSensors(newPlant));
+            newPlant = this.plantRepository.save(newPlant);
+            //create summary readings if non-existent
+            if (this.summaryReadingsRepository.findByUser(user).isEmpty()) this.createBasicSummary(user);
+
+            return PlantInfoOut.builder()
+                    .id(newPlant.getId())
+                    .name(newPlant.getName())
+                    .country(newPlant.getCountry())
+                    .build();
+        } catch (Exception err) {
+            throw new ConflictPersistException(err.getMessage());
+        }
+    }
+
+    public PlantInfoOut updatePlant(Long plantId, PlantIn input, String username) {
+        //check plant
+        PlantEntity plantSaved = this.plantRepository.findById(plantId)
+                .orElseThrow(()-> new EntityNotFoundException("Planta no encontrada"));
+        //check unique (plant - country)
+        if (!input.getName().equalsIgnoreCase(plantSaved.getName()) || !input.getCountry().equalsIgnoreCase(plantSaved.getCountry())) {
+            Boolean existByNameAndCountry = this.plantRepository.existsByNameIgnoreCaseAndCountryIgnoreCase(input.getName(), input.getCountry());
+            if (existByNameAndCountry) throw new ConflictExistException("Ya existe una planta con el nombre: " + input.getName() + ", para el pais: " + input.getCountry());
+        }
+        //edit plant
+        try {
+            plantSaved.setName(input.getName());
+            plantSaved.setCountry(input.getCountry());
+            plantSaved = this.plantRepository.save(plantSaved);
+            return PlantInfoOut.builder()
+                    .id(plantSaved.getId())
+                    .name(plantSaved.getName())
+                    .country(plantSaved.getCountry())
+                    .build();
+        } catch (Exception err) {
+            throw new ConflictPersistException(err.getMessage());
+        }
+    }
+
+    public void deletePlant(Long plantId, String username) {
+        //Check user
+        UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
+
+        //check plant
+        PlantEntity plantSaved = this.plantRepository.findById(plantId)
+                .orElseThrow(()-> new EntityNotFoundException("Planta no encontrada"));
+        //delete plant
+        //Se podria utilizar un soft delete si no se quiere eliminar a planta por completo (por ejemplo deshabilitarla)
+        try {
+            this.plantRepository.deleteById(plantId);
+            Boolean deleteSummary = this.plantRepository.findAllByUser(user).isEmpty();
+            this.updateSummaryOnDeletePlant(user,plantSaved,deleteSummary);
+        } catch (Exception err) {
+            throw new ConflictPersistException(err.getMessage());
+        }
+    }
+
+    public AllSensorsReadingsStatsOut getAllSensorsReadingsByUser(String username) {
+        //Check user
+        UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
+        try {
+            //todas las lecturas/alertas de cada sensor de cada planta de un usuario
+            SummaryReadingsEntity summary = this.summaryReadingsRepository.findByUser(user).orElseThrow(()-> new EntityNotFoundException("No se ha encontrado el resumen de lecturas/alertas"));
+            return AllSensorsReadingsStatsOut.builder()
+                    .readings(summary.getReadings().stream().map(r -> new ReadingOut(r.getId(),r.getValue(),r.getAlertType())).collect(Collectors.toSet()))
+                    .build();
+        } catch (Exception err) {
+        throw new ConflictPersistException(err.getMessage());
+        }
+    }
+
+    /* SUMMARY READINGS CONTEXT */
+
+    private void updateSummaryOnDeletePlant(UserEntity user, PlantEntity plant,Boolean deleteSummary) {
+
+        Optional<SummaryReadingsEntity> summary = this.summaryReadingsRepository.findByUser(user);
+        if (!summary.isEmpty()) {
+            if (!deleteSummary) {
+                summary.get().getReadings().forEach(r -> {
+                    plant.getSensors().forEach(s -> {
+                        Integer plantReadingValue = s.getReadings().stream()
+                                .filter(plantReading -> plantReading.getAlertType().equals(r.getAlertType()))
+                                .findFirst()
+                                .get()
+                                .getValue();
+
+                        r.setValue(r.getValue() - plantReadingValue);
+                    });
+                });
+                this.summaryReadingsRepository.save(summary.get());
+            } else {
+                this.summaryReadingsRepository.deleteById(summary.get().getId());
+            }
+        }
+    }
+
+
+    private SummaryReadingsEntity createBasicSummary(UserEntity user) {
+        //main readings
+        Set<ReadingEntity> readings = new HashSet<>();
+        readings.add(new ReadingEntity(0, AlertTypeEnum.OK));
+        readings.add(new ReadingEntity(0, AlertTypeEnum.MEDIUM));
+        readings.add(new ReadingEntity(0, AlertTypeEnum.RED));
+        try {
+            SummaryReadingsEntity summary = SummaryReadingsEntity.builder()
+                    .user(user)
+                    .readings(readings)
+                    .build();
+            return this.summaryReadingsRepository.save(summary);
+        } catch (Exception err) {
+            throw new ConflictPersistException(err.getMessage());
+        }
+    }
+
+}

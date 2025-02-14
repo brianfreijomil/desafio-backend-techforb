@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ErrorCatalog {
 
-    ENTITY_NOT_FOUND("ERR_ENTITY_001", "No se ha encontrado "),
+    ENTITY_NOT_FOUND("ERR_ENTITY_001", "."),
     CONFLICT_EXIST("ERR_ENTITY_002", "."),
     INVALID_ENTITY("ERR_ENTITY_003", "Parametros de entidad invalidos."),
     INVALID_TOKEN("ERR_TOKEN_001", " Token invalido: "),

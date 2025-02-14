@@ -1,12 +1,12 @@
 package com.challenge_techforb.desafio_backend.persistence.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
@@ -19,7 +19,7 @@ public class ReadingEntity {
     private Long id;
 
     @Column
-    private Long value;
+    private Integer value;
 
     @Column(name = "alert_type")
     @Enumerated(EnumType.STRING)
@@ -28,17 +28,10 @@ public class ReadingEntity {
     @Column
     private LocalDateTime created_at;
 
-    public ReadingEntity(Long value, AlertTypeEnum alert) {
+    public ReadingEntity(Integer value, AlertTypeEnum alert) {
         this.value = value;
         this.alertType = alert;
         this.created_at = LocalDateTime.now();
     }
 
-    /*
-    id (PK)
-sensor_id (FK -> Sensores)
-valor
-fecha_hora
-tipo_alerta (ok, media, roja)
-     */
 }

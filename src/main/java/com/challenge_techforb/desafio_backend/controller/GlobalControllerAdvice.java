@@ -3,6 +3,7 @@ package com.challenge_techforb.desafio_backend.controller;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.challenge_techforb.desafio_backend.controller.dto.response.ErrorResponse;
 import com.challenge_techforb.desafio_backend.exception.ConflictExistException;
+import com.challenge_techforb.desafio_backend.exception.ConflictPersistException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class GlobalControllerAdvice {
     public ErrorResponse handleEntityNotFoundException(EntityNotFoundException exception) {
         return ErrorResponse.builder()
                 .code(ENTITY_NOT_FOUND.getCode())
-                .message(ENTITY_NOT_FOUND.getMessage().concat(exception.getMessage()))
+                .message(exception.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
     }

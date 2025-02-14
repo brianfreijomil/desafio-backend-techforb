@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @Getter
@@ -22,11 +25,22 @@ public class SensorEntity {
     @Enumerated(EnumType.STRING)
     private SensorEnum type;
 
+    @ManyToOne
+    private PlantEntity plant;
+
+    @Column
+    private Boolean isEnabled;
+
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.EAGER)
+    private Set<ReadingEntity> readings = new HashSet<>();
+
     @Column
     private LocalDateTime created_at;
 
-    public SensorEntity(SensorEnum type) {
+    public SensorEntity(SensorEnum type,PlantEntity plant) {
         this.type = type;
         this.created_at = LocalDateTime.now();
+        this.isEnabled = true;
+        this.plant = plant;
     }
 }

@@ -1,16 +1,14 @@
 package com.challenge_techforb.desafio_backend.persistence.repository;
 
 import com.challenge_techforb.desafio_backend.persistence.entity.PlantEntity;
-import com.challenge_techforb.desafio_backend.persistence.entity.UserEntity;
+import com.challenge_techforb.desafio_backend.persistence.entity.SensorEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface PlantRepository extends JpaRepository<PlantEntity,Long> {
+public interface SensorRepository extends JpaRepository<SensorEntity,Long> {
 
-    List<PlantEntity> findAllByUser(UserEntity userEntity);
-
-    Boolean existsByNameIgnoreCaseAndCountryIgnoreCase(String name, String country);
+    List<SensorEntity> findAllByPlant(PlantEntity plantEntity);
 }
