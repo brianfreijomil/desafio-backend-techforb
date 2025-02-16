@@ -57,8 +57,6 @@ public class DesafioBackendApplication {
 				Set.of(createPermission, readPermission, updatePermission, deletePermission, refactorPermission)
 		);
 
-		roleRepository.saveAll(List.of(roleAdmin,roleDeveloper,roleInvited,roleUser));
-
 		UserEntity u1 = UserEntity.builder()
 				.email("test123@hotmail.com")
 				.username("usertest")

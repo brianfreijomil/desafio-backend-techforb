@@ -8,6 +8,7 @@ import com.challenge_techforb.desafio_backend.controller.dto.response.SensorOut;
 import com.challenge_techforb.desafio_backend.exception.ConflictExistException;
 import com.challenge_techforb.desafio_backend.exception.ConflictPersistException;
 import com.challenge_techforb.desafio_backend.persistence.entity.*;
+import com.challenge_techforb.desafio_backend.persistence.repository.IAllPlantsAndSumReadingsByAlertType;
 import com.challenge_techforb.desafio_backend.persistence.repository.PlantRepository;
 import com.challenge_techforb.desafio_backend.persistence.repository.SummaryReadingsRepository;
 import com.challenge_techforb.desafio_backend.persistence.repository.UserRepository;
@@ -40,7 +41,31 @@ public class PlantService {
                 .id(plant.getId())
                 .name(plant.getName())
                 .country(plant.getCountry())
-                .sensors(plant.getSensors().stream().map(SensorOut::new).collect(Collectors.toList()))
+                .sensors(plant.getSensors().stream().map(s ->
+                        SensorOut.builder()
+                                .id(s.getId())
+                                .type(s.getType().toString())
+                                .isEnabled(s.getIsEnabled())
+                                .sensorOk(new ReadingOut(s.getReadings()
+                                        .stream()
+                                        .filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK"))
+                                        .findFirst()
+                                        .get())
+                                )
+                                .mediumAlert(new ReadingOut(s.getReadings()
+                                        .stream()
+                                        .filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM"))
+                                        .findFirst()
+                                        .get())
+                                )
+                                .redAlert(new ReadingOut(s.getReadings()
+                                        .stream()
+                                        .filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED"))
+                                        .findFirst()
+                                        .get())
+                                )
+                                .build()
+                ).collect(Collectors.toList()))
                 .build();
     }
 
@@ -57,11 +82,55 @@ public class PlantService {
         UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
 
-        return this.plantRepository.findAllByUser(user).stream().map(plant -> PlantInfoOut.builder()
-                .id(plant.getId())
-                .name(plant.getName())
-                .country(plant.getCountry())
-                .build()).collect(Collectors.toList());
+        List<PlantEntity> plants = this.plantRepository.findAllByUser(user);
+        List<IAllPlantsAndSumReadingsByAlertType> plantsStats = this.plantRepository.findAllByIdAAndSumReadingAlertType(user.getId());
+
+        List<PlantInfoOut> list = plants.stream().map(plant -> PlantInfoOut.builder()
+        .id(plant.getId())
+        .name(plant.getName())
+        .country(plant.getCountry())
+        .sensors(plant.getSensors().stream().map(s -> SensorOut.builder()
+                .id(s.getId())
+                .type(s.getType().toString())
+                .isEnabled(s.getIsEnabled())
+                .sensorOk(new ReadingOut(s.getReadings()
+                        .stream()
+                        .filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK"))
+                        .findFirst()
+                        .get())
+                )
+                .mediumAlert(new ReadingOut(s.getReadings()
+                        .stream()
+                        .filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM"))
+                        .findFirst()
+                        .get())
+                )
+                .redAlert(new ReadingOut(s.getReadings()
+                        .stream()
+                        .filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED"))
+                        .findFirst()
+                        .get())
+                )
+                .build()).collect(Collectors.toList())
+        )
+        .sensorOk(new ReadingOut(plantsStats.stream()
+                .filter(p -> p.getId().equals(plant.getId()))
+                .filter(r -> r.getAlertType().equalsIgnoreCase("OK"))
+                .findFirst().get())
+        )
+        .mediumAlert(new ReadingOut(plantsStats.stream()
+                .filter(p -> p.getId().equals(plant.getId()))
+                .filter(r -> r.getAlertType().equalsIgnoreCase("MEDIUM"))
+                .findFirst().get())
+        )
+        .redAlert(new ReadingOut(plantsStats.stream()
+                .filter(p -> p.getId().equals(plant.getId()))
+                .filter(r -> r.getAlertType().equalsIgnoreCase("RED"))
+                .findFirst().get())
+        )
+        .build()).collect(Collectors.toList());
+
+        return list;
     }
 
     @Transactional
@@ -138,9 +207,14 @@ public class PlantService {
         //Check user
         UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
+        //todas las lecturas/alertas de cada sensor de cada planta de un usuario
+        Optional<SummaryReadingsEntity> summaryOpt = this.summaryReadingsRepository.findByUser(user);
+        if (summaryOpt.isEmpty()) {
+            return AllSensorsReadingsStatsOut.builder().build();
+        }
+
         try {
-            //todas las lecturas/alertas de cada sensor de cada planta de un usuario
-            SummaryReadingsEntity summary = this.summaryReadingsRepository.findByUser(user).orElseThrow(()-> new EntityNotFoundException("No se ha encontrado el resumen de lecturas/alertas"));
+            SummaryReadingsEntity summary = summaryOpt.get();
             return AllSensorsReadingsStatsOut.builder()
                     .readings(summary.getReadings().stream().map(r -> new ReadingOut(r.getId(),r.getValue(),r.getAlertType())).collect(Collectors.toSet()))
                     .build();

@@ -1,10 +1,8 @@
 package com.challenge_techforb.desafio_backend.controller.dto.request;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +23,6 @@ public class AuthCreateUserIn {
             message = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un carácter especial."
     )
     private String password;
-    @Valid
-    private AuthCreateRoleIn roleRequest;
+//    @Valid
+//    private AuthCreateRoleIn roleRequest;
 }

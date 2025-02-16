@@ -15,4 +15,7 @@ public class PlantInfoOut {
     private String name;
     private String country;
     private List<SensorOut> sensors;
+    private ReadingOut sensorOk;
+    private ReadingOut mediumAlert;
+    private ReadingOut redAlert;
 }

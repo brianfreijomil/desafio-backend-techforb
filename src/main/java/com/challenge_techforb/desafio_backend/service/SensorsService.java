@@ -1,6 +1,7 @@
 package com.challenge_techforb.desafio_backend.service;
 
 import com.challenge_techforb.desafio_backend.controller.dto.request.SensorIn;
+import com.challenge_techforb.desafio_backend.controller.dto.response.ReadingOut;
 import com.challenge_techforb.desafio_backend.controller.dto.response.SensorOut;
 import com.challenge_techforb.desafio_backend.exception.ConflictPersistException;
 import com.challenge_techforb.desafio_backend.persistence.entity.*;
@@ -63,7 +64,31 @@ public class SensorsService {
         PlantEntity plant = this.plantRepository.findById(plantId)
                 .orElseThrow(()-> new EntityNotFoundException("Planta no encontrada"));
         //sensors
-        return this.sensorRepository.findAllByPlant(plant).stream().map(SensorOut::new).collect(Collectors.toList());
+        return this.sensorRepository.findAllByPlant(plant).stream().map( s ->
+                SensorOut.builder()
+                        .id(s.getId())
+                        .type(s.getType().toString())
+                        .isEnabled(s.getIsEnabled())
+                        .sensorOk(new ReadingOut(s.getReadings()
+                                .stream()
+                                .filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK"))
+                                .findFirst()
+                                .get())
+                        )
+                        .mediumAlert(new ReadingOut(s.getReadings()
+                                .stream()
+                                .filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM"))
+                                .findFirst()
+                                .get())
+                        )
+                        .redAlert(new ReadingOut(s.getReadings()
+                                .stream()
+                                .filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED"))
+                                .findFirst()
+                                .get())
+                        )
+                        .build()
+        ).collect(Collectors.toList());
     }
 
     public SensorOut updateSensor(Long sensorId, SensorIn input, String username) {
@@ -92,7 +117,29 @@ public class SensorsService {
             });
             sensorSaved = this.sensorRepository.save(sensorSaved);
             this.updateSummaryReadings(input,oldReadings,username);
-            return new SensorOut(sensorSaved);
+            return SensorOut.builder()
+                    .id(sensorSaved.getId())
+                    .type(sensorSaved.getType().toString())
+                    .isEnabled(sensorSaved.getIsEnabled())
+                    .sensorOk(new ReadingOut(sensorSaved.getReadings()
+                            .stream()
+                            .filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK"))
+                            .findFirst()
+                            .get())
+                    )
+                    .mediumAlert(new ReadingOut(sensorSaved.getReadings()
+                            .stream()
+                            .filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM"))
+                            .findFirst()
+                            .get())
+                    )
+                    .redAlert(new ReadingOut(sensorSaved.getReadings()
+                            .stream()
+                            .filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED"))
+                            .findFirst()
+                            .get())
+                    )
+                    .build();
 
         } catch (Exception err) {
             throw new ConflictPersistException(err.getMessage());

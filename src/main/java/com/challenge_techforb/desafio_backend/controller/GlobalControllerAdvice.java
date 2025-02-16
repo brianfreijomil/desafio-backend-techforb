@@ -3,7 +3,6 @@ package com.challenge_techforb.desafio_backend.controller;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.challenge_techforb.desafio_backend.controller.dto.response.ErrorResponse;
 import com.challenge_techforb.desafio_backend.exception.ConflictExistException;
-import com.challenge_techforb.desafio_backend.exception.ConflictPersistException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;

@@ -65,9 +65,10 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (this.userRepository.existsByEmailIgnoreCase(email)) throw new ConflictExistException("El email ingresado ya esta en uso");
         if (this.userRepository.existsByUsernameIgnoreCase(username)) throw new ConflictExistException("El nombre de usuario ingresado ya esta en uso");
 
-        List<String> rolesRequest = request.getRoleRequest().getRoleListName();
-
-        List<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(rolesRequest).stream().collect(Collectors.toList());
+//        List<String> rolesRequest = request.getRoleRequest().getRoleListName();
+//
+        //por ahora le doy a todos rol de admin
+        List<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(List.of("ADMIN")).stream().collect(Collectors.toList());
 
         if (roleEntityList.isEmpty()) {
             throw new IllegalArgumentException("The roles specified does not exist.");
@@ -82,7 +83,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
         );
 
         UserEntity userSaved = userRepository.save(userEntity);
-
         ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
         userSaved.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
@@ -93,7 +93,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
         String accessToken = jwtUtils.createToken(authentication);
 
-        AuthResponse authResponse = new AuthResponse(username, "User created successfully", accessToken, true);
+        AuthResponse authResponse = new AuthResponse(username, "Registro de usuario exitoso!", accessToken, true);
         return authResponse;
     }
 
