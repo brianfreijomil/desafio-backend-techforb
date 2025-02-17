@@ -1,0 +1,430 @@
+{
+	"info": {
+		"_postman_id": "b0629250-1948-40b2-8bf6-bc6a33d4f3c2",
+		"name": "backend-challenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30069639"
+	},
+	"item": [
+		{
+			"name": "AUTH",
+			"item": [
+				{
+					"name": "USER-INFO",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImJyaWFuZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLFVQREFURSxERUxFVEUsQ1JFQVRFLFJFQUQiLCJpYXQiOjE3MzkzODM1ODgsImV4cCI6MTczOTM4NTM4OCwianRpIjoiOGY4NmM3YmQtNGIxNi00NDZlLWExOTYtMzhkZTQ1MzRiMTdiIiwibmJmIjoxNzM5MzgzNTg4fQ.nUf7Psl-KFXcNe91p76uKR0X8w3suSZE90IVtTsHIyE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/auth/me/brianfreijomil",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"auth",
+								"me",
+								"brianfreijomil"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "REGISTER",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"brianfreijomil1@hotmail.com\",\r\n  \"username\": \"brianfreijomil\",\r\n  \"password\": \"Test12345@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/auth/sign-up",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"sign-up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "LOGIN",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"brianfreijomil@hotmail.com\",\r\n    \"password\": \"Test12345@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/auth/log-in",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"auth",
+								"log-in"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PLANTS",
+			"item": [
+				{
+					"name": "GET-PLANTS",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImtldmluZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NDU5MjksImV4cCI6MTczOTU0NzcyOSwianRpIjoiNGQ0ZDViMDUtOWFiMy00YzYyLTllOTktYzc0YzJlOTRmOTc1IiwibmJmIjoxNzM5NTQ1OTI5fQ.d2luQt2Oe4KADYtN0oqUhVb4UdQyX9OwBL-G2Cvy7jY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/plants",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"plants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PLANT_DETAIL",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImtldmluZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NDU5MjksImV4cCI6MTczOTU0NzcyOSwianRpIjoiNGQ0ZDViMDUtOWFiMy00YzYyLTllOTktYzc0YzJlOTRmOTc1IiwibmJmIjoxNzM5NTQ1OTI5fQ.d2luQt2Oe4KADYtN0oqUhVb4UdQyX9OwBL-G2Cvy7jY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/plants/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"plants",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "POST",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImJyaWFuZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NjI1MzcsImV4cCI6MTczOTU2NDMzNywianRpIjoiYmRiMGUxMjgtMjM2My00OWVjLWI5ZTAtNjViOTRhZjFhOGY2IiwibmJmIjoxNzM5NTYyNTM3fQ.A_exNWmgP1caAhFk8KizP9Fw4uiy2flEO-QnGsexrrA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"kev-bbb\",\r\n  \"country\": \"Alemania\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/plants",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"plants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImtldmluZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NDU5MjksImV4cCI6MTczOTU0NzcyOSwianRpIjoiNGQ0ZDViMDUtOWFiMy00YzYyLTllOTktYzc0YzJlOTRmOTc1IiwibmJmIjoxNzM5NTQ1OTI5fQ.d2luQt2Oe4KADYtN0oqUhVb4UdQyX9OwBL-G2Cvy7jY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"kev-123\",\r\n    \"country\": \"Alemania\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/plants/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"plants",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImtldmluZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NDU5MjksImV4cCI6MTczOTU0NzcyOSwianRpIjoiNGQ0ZDViMDUtOWFiMy00YzYyLTllOTktYzc0YzJlOTRmOTc1IiwibmJmIjoxNzM5NTQ1OTI5fQ.d2luQt2Oe4KADYtN0oqUhVb4UdQyX9OwBL-G2Cvy7jY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/plants/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"plants",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SENSORS",
+			"item": [
+				{
+					"name": "SENSORS-BY-PLANT",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImJyaWFuZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NjI1MzcsImV4cCI6MTczOTU2NDMzNywianRpIjoiYmRiMGUxMjgtMjM2My00OWVjLWI5ZTAtNjViOTRhZjFhOGY2IiwibmJmIjoxNzM5NTYyNTM3fQ.A_exNWmgP1caAhFk8KizP9Fw4uiy2flEO-QnGsexrrA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/sensors/by-plant/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"sensors",
+								"by-plant",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UPDATE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImJyaWFuZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NjI1MzcsImV4cCI6MTczOTU2NDMzNywianRpIjoiYmRiMGUxMjgtMjM2My00OWVjLWI5ZTAtNjViOTRhZjFhOGY2IiwibmJmIjoxNzM5NTYyNTM3fQ.A_exNWmgP1caAhFk8KizP9Fw4uiy2flEO-QnGsexrrA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"readings\": [\r\n    {\r\n      \"id\": 7,\r\n      \"type\": \"OK\",\r\n      \"value\": 10\r\n    },\r\n    {\r\n      \"id\": 9,\r\n      \"type\": \"MEDIUM\",\r\n      \"value\": 100\r\n    },\r\n    {\r\n      \"id\": 8,\r\n      \"type\": \"RED\",\r\n      \"value\": 10\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/sensors/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"sensors",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DISABLE-ENABLE",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImtldmluZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLFVQREFURSxERUxFVEUsUkVBRCxDUkVBVEUiLCJpYXQiOjE3Mzk1NDY3NDIsImV4cCI6MTczOTU0ODU0MiwianRpIjoiNjA3Mjk1YjEtZmYxYy00Y2Q5LTkyOWMtZTk4NDdmMmU3ZTNkIiwibmJmIjoxNzM5NTQ2NzQyfQ.pS1gBM_dI_V5PaEkoQI-GLPGyDkZ4jU65QJ2vnVPV2I",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/sensors/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"sensors",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "READINGS",
+			"item": []
+		},
+		{
+			"name": "SUMMARY",
+			"item": [
+				{
+					"name": "SUMMARY READINGS",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJDSEFMTEVOR0UtQkFDS0VORCIsInN1YiI6ImJyaWFuZnJlaWpvbWlsIiwiYXV0aG9yaXRpZXMiOiJST0xFX0FETUlOLERFTEVURSxDUkVBVEUsUkVBRCxVUERBVEUiLCJpYXQiOjE3Mzk1NjI1MzcsImV4cCI6MTczOTU2NDMzNywianRpIjoiYmRiMGUxMjgtMjM2My00OWVjLWI5ZTAtNjViOTRhZjFhOGY2IiwibmJmIjoxNzM5NTYyNTM3fQ.A_exNWmgP1caAhFk8KizP9Fw4uiy2flEO-QnGsexrrA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/plants/by-user/summary-readings",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"plants",
+								"by-user",
+								"summary-readings"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
