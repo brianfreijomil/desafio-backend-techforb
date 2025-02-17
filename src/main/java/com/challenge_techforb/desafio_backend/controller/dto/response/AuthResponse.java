@@ -1,10 +1,8 @@
 package com.challenge_techforb.desafio_backend.controller.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter

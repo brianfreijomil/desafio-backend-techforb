@@ -18,10 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerErrorException;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -33,6 +30,12 @@ public class PlantService {
     private final UserRepository userRepository;
     private final SummaryReadingsRepository summaryReadingsRepository;
 
+    /**
+     * get plant detail by id
+     *
+     * @param plantId
+     * @return plant detail, sensors associated, readings, etc.
+     */
     public PlantInfoOut getPlantDetailById(Long plantId) {
         PlantEntity plant = this.plantRepository.findById(plantId)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontro la planta"));
@@ -69,6 +72,10 @@ public class PlantService {
                 .build();
     }
 
+    /**
+     * get all plants existing
+     * @return list of plants
+     */
     public List<PlantInfoOut> getAllPlants() {
         return this.plantRepository.findAll().stream().map(plant -> PlantInfoOut.builder()
                 .id(plant.getId())
@@ -77,6 +84,12 @@ public class PlantService {
                 .build()).collect(Collectors.toList());
     }
 
+    /**
+     * get all plants by user
+     *
+     * @param username
+     * @return plants info, with details, sensors, readings
+     */
     public List<PlantInfoOut> getAllPlantsByUser(String username) {
         //Check user
         UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
@@ -133,6 +146,13 @@ public class PlantService {
         return list;
     }
 
+    /**
+     * create a new plant, also create 8 sensors for the plant, 3 reading for each sensor, and create a summary readings
+     *
+     * @param input
+     * @param username
+     * @return plant created
+     */
     @Transactional
     public PlantInfoOut createPlant(PlantIn input, String username) {
         //check unique (plant - country)
@@ -150,16 +170,70 @@ public class PlantService {
             //create summary readings if non-existent
             if (this.summaryReadingsRepository.findByUser(user).isEmpty()) this.createBasicSummary(user);
 
+            //sum readings of sensors of plant
+            ReadingOut ok = new ReadingOut(null,0,AlertTypeEnum.OK);
+            ReadingOut medium = new ReadingOut(null,0,AlertTypeEnum.MEDIUM);
+            ReadingOut red = new ReadingOut(null,0,AlertTypeEnum.RED);
+            for(SensorEntity se : newPlant.getSensors()) {
+                for(ReadingEntity re : se.getReadings()) {
+                    if (re.getAlertType().toString().equalsIgnoreCase("OK")) {
+                        ok.setValue(ok.getValue() + re.getValue());
+                    }
+                    else if (re.getAlertType().toString().equalsIgnoreCase("MEDIUM")) {
+                        medium.setValue(medium.getValue() + re.getValue());
+                    }
+                    else if (re.getAlertType().toString().equalsIgnoreCase("RED")) {
+                        red.setValue(red.getValue() + re.getValue());
+                    }
+                }
+            }
+
+            //return plant created with the whole info
             return PlantInfoOut.builder()
                     .id(newPlant.getId())
                     .name(newPlant.getName())
                     .country(newPlant.getCountry())
+                    .sensors(newPlant.getSensors().stream().map(s -> SensorOut.builder()
+                            .id(s.getId())
+                            .type(s.getType().toString())
+                            .isEnabled(s.getIsEnabled())
+                            .sensorOk(new ReadingOut(s.getReadings()
+                                    .stream()
+                                    .filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK"))
+                                    .findFirst()
+                                    .get())
+                            )
+                            .mediumAlert(new ReadingOut(s.getReadings()
+                                    .stream()
+                                    .filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM"))
+                                    .findFirst()
+                                    .get())
+                            )
+                            .redAlert(new ReadingOut(s.getReadings()
+                                    .stream()
+                                    .filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED"))
+                                    .findFirst()
+                                    .get())
+                            )
+                            .build()).collect(Collectors.toList())
+                    )
+                    .sensorOk(ok)
+                    .mediumAlert(medium)
+                    .redAlert(red)
                     .build();
         } catch (Exception err) {
             throw new ConflictPersistException(err.getMessage());
         }
     }
 
+    /**
+     * update an existing plant by id
+     *
+     * @param plantId
+     * @param input
+     * @param username
+     * @return plant updated
+     */
     public PlantInfoOut updatePlant(Long plantId, PlantIn input, String username) {
         //check plant
         PlantEntity plantSaved = this.plantRepository.findById(plantId)
@@ -184,6 +258,12 @@ public class PlantService {
         }
     }
 
+    /**
+     * delete a existing plant by id
+     *
+     * @param plantId
+     * @param username
+     */
     public void deletePlant(Long plantId, String username) {
         //Check user
         UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
@@ -196,6 +276,7 @@ public class PlantService {
         //Se podria utilizar un soft delete si no se quiere eliminar a planta por completo (por ejemplo deshabilitarla)
         try {
             this.plantRepository.deleteById(plantId);
+            //si no tengo plantas asociadas al usuario elimino el summary
             Boolean deleteSummary = this.plantRepository.findAllByUser(user).isEmpty();
             this.updateSummaryOnDeletePlant(user,plantSaved,deleteSummary);
         } catch (Exception err) {
@@ -213,10 +294,13 @@ public class PlantService {
             return AllSensorsReadingsStatsOut.builder().build();
         }
 
+        Integer sensorsDisabledCount = (int) this.sensorsService.getCountSensorsDisabled();
+
         try {
             SummaryReadingsEntity summary = summaryOpt.get();
             return AllSensorsReadingsStatsOut.builder()
                     .readings(summary.getReadings().stream().map(r -> new ReadingOut(r.getId(),r.getValue(),r.getAlertType())).collect(Collectors.toSet()))
+                    .sensorsDisabled(sensorsDisabledCount)
                     .build();
         } catch (Exception err) {
         throw new ConflictPersistException(err.getMessage());
@@ -225,6 +309,13 @@ public class PlantService {
 
     /* SUMMARY READINGS CONTEXT */
 
+    /**
+     * update a summary on deleted plant
+     *
+     * @param user
+     * @param plant
+     * @param deleteSummary
+     */
     private void updateSummaryOnDeletePlant(UserEntity user, PlantEntity plant,Boolean deleteSummary) {
 
         Optional<SummaryReadingsEntity> summary = this.summaryReadingsRepository.findByUser(user);
@@ -248,7 +339,12 @@ public class PlantService {
         }
     }
 
-
+    /**
+     * create a summary readings
+     *
+     * @param user
+     * @return summary created
+     */
     private SummaryReadingsEntity createBasicSummary(UserEntity user) {
         //main readings
         Set<ReadingEntity> readings = new HashSet<>();

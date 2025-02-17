@@ -48,11 +48,16 @@ public class SecurityConfig {
 
                     // EndPoints Privados
                     http.requestMatchers(HttpMethod.GET, "/auth/**").authenticated();
-                    http.requestMatchers(HttpMethod.GET, "/test/**").authenticated();
-                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("READ");
-                    http.requestMatchers(HttpMethod.POST, "/method/post").hasAuthority("CREATE");
-                    http.requestMatchers(HttpMethod.DELETE, "/method/delete").hasAuthority("DELETE");
-                    http.requestMatchers(HttpMethod.PUT, "/method/put").hasAuthority("UPDATE");
+                    http.requestMatchers(HttpMethod.GET, "/plants/**").authenticated();
+                    http.requestMatchers(HttpMethod.GET, "/sensors/**").authenticated();
+                    http.requestMatchers(HttpMethod.POST, "/plants").hasAuthority("CREATE");
+                    http.requestMatchers(HttpMethod.POST, "/plants/**").hasAuthority("CREATE");
+                    http.requestMatchers(HttpMethod.DELETE, "/plants/**").hasAuthority("DELETE");
+                    http.requestMatchers(HttpMethod.PUT, "/plants/**").hasAuthority("UPDATE");
+                    http.requestMatchers(HttpMethod.POST, "/sensors").hasAuthority("CREATE");
+                    http.requestMatchers(HttpMethod.POST, "/sensors/**").hasAuthority("CREATE");
+                    http.requestMatchers(HttpMethod.DELETE, "/sensors/**").hasAuthority("DELETE");
+                    http.requestMatchers(HttpMethod.PUT, "/sensors/**").hasAuthority("UPDATE");
 
                     http.anyRequest().authenticated();
                 })

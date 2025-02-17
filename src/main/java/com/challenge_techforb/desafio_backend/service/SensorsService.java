@@ -28,6 +28,12 @@ public class SensorsService {
     private final SummaryReadingsRepository summaryReadingsRepository;
     private final UserRepository userRepository;
 
+    /**
+     * create initial 8 sensors for a new plant
+     *
+     * @param plant
+     * @return list of sensors
+     */
     public List<SensorEntity> createInitialSensors(PlantEntity plant) {
         if (plant != null) {
 
@@ -59,6 +65,12 @@ public class SensorsService {
         } return null;
     }
 
+    /**
+     * get all sensors by plant
+     *
+     * @param plantId
+     * @return list of sensors
+     */
     public List<SensorOut> getAllSensorsByPlant(Long plantId) {
         //plant
         PlantEntity plant = this.plantRepository.findById(plantId)
@@ -91,6 +103,14 @@ public class SensorsService {
         ).collect(Collectors.toList());
     }
 
+    /**
+     * update readings of specific sensor by id and update summary readings affected
+     *
+     * @param sensorId
+     * @param input
+     * @param username
+     * @return sensor updated
+     */
     public SensorOut updateSensor(Long sensorId, SensorIn input, String username) {
         //check sensor
         SensorEntity sensorSaved = this.sensorRepository.findById(sensorId)
@@ -146,6 +166,13 @@ public class SensorsService {
         }
     }
 
+    /**
+     * update a summary readings on sensor readings updating
+     *
+     * @param input
+     * @param oldReadings
+     * @param username
+     */
     private void updateSummaryReadings(SensorIn input, Set<ReadingEntity> oldReadings, String username) {
 
         //Check user
@@ -181,16 +208,93 @@ public class SensorsService {
         this.summaryReadingsRepository.save(summary);
     }
 
-    public void disableEnableSensor(Long sensorId) {
+    /**
+     * disable / enable sensor logic
+     *
+     * @param sensorId
+     * @param username
+     * @return sensor updated
+     */
+    public SensorOut disableEnableSensor(Long sensorId, String username) {
+        //Check user
+        UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
         //check sensor
         SensorEntity sensorSaved = this.sensorRepository.findById(sensorId)
                 .orElseThrow(()-> new EntityNotFoundException("Sensor no encontrado"));
         //disable/enable sensor
         try {
             sensorSaved.setIsEnabled(!sensorSaved.getIsEnabled());
-            this.sensorRepository.save(sensorSaved);
+            //update summary readings
+            this.updateSummaryOnDisableEnableSensor(sensorSaved,user);
+            sensorSaved = this.sensorRepository.save(sensorSaved);
+
+            return SensorOut.builder()
+                    .id(sensorSaved.getId())
+                    .isEnabled(sensorSaved.getIsEnabled())
+                    .build();
+
         } catch (Exception err) {
             throw new ConflictPersistException(err.getMessage());
         }
+    }
+
+    /**
+     * update a summary readings on change sensor status
+     *
+     * @param sensorSaved
+     * @param user
+     */
+    private void updateSummaryOnDisableEnableSensor(SensorEntity sensorSaved, UserEntity user) {
+        SummaryReadingsEntity summary = this.summaryReadingsRepository.findByUser(user)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontro el resumen de lecturas/alertas"));
+
+        Set<ReadingEntity> readings = summary.getReadings();
+
+        ReadingEntity ok = readings.stream().filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK")).findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Reading OK not found"));
+        ReadingEntity medium = readings.stream().filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM")).findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Reading MEDIUM not found"));
+        ReadingEntity red = readings.stream().filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED")).findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Reading RED not found"));
+
+        int okValueChange = sensorSaved.getReadings().stream()
+                .filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK"))
+                .findFirst()
+                .map(ReadingEntity::getValue)
+                .orElse(0);
+
+        int mediumValueChange = sensorSaved.getReadings().stream()
+                .filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM"))
+                .findFirst()
+                .map(ReadingEntity::getValue)
+                .orElse(0);
+
+        int redValueChange = sensorSaved.getReadings().stream()
+                .filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED"))
+                .findFirst()
+                .map(ReadingEntity::getValue)
+                .orElse(0);
+
+        if (!sensorSaved.getIsEnabled()) {
+            ok.setValue(ok.getValue() - okValueChange);
+            medium.setValue(medium.getValue() - mediumValueChange);
+            red.setValue(red.getValue() - redValueChange);
+        } else {
+            ok.setValue(ok.getValue() + okValueChange);
+            medium.setValue(medium.getValue() + mediumValueChange);
+            red.setValue(red.getValue() + redValueChange);
+        }
+
+        summary.setReadings(readings);
+        this.summaryReadingsRepository.save(summary);
+    }
+
+    /**
+     * get count of disabled sensors
+     * @return count disabled sensors
+     */
+    public long getCountSensorsDisabled() {
+        return this.sensorRepository.countByIsEnabledFalse();
     }
 }

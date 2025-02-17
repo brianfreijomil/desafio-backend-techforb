@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -58,20 +59,42 @@ public class DesafioBackendApplication {
 		);
 
 		UserEntity u1 = UserEntity.builder()
-				.email("test123@hotmail.com")
+				.email("usertest@hotmail.com")
 				.username("usertest")
 				.password(passwordEncoder.encode("Test12345@"))
-				.roles(List.of(roleAdmin,roleDeveloper))
+				.roles(List.of(roleDeveloper))
+				.created_at(LocalDateTime.now())
+				.isEnabled(true)
 				.build();
 
 		UserEntity u2 = UserEntity.builder()
 				.email("test12345@hotmail.com")
 				.username("usertest2")
 				.password(passwordEncoder.encode("Test12345@"))
-				.roles(List.of(roleAdmin,roleDeveloper))
+				.roles(List.of(roleAdmin))
+				.created_at(LocalDateTime.now())
+				.isEnabled(true)
 				.build();
 
-		userRepository.saveAll(List.of(u1,u2));
+			UserEntity u3 = UserEntity.builder()
+					.email("emailtest@hotmail.com")
+					.username("usernamet3")
+					.password(passwordEncoder.encode("Test12345@"))
+					.roles(List.of(roleInvited))
+					.created_at(LocalDateTime.now())
+					.isEnabled(true)
+					.build();
+
+			UserEntity u4 = UserEntity.builder()
+					.email("usuariosimple@hotmail.com")
+					.username("usuariosimple")
+					.password(passwordEncoder.encode("Test12345@"))
+					.roles(List.of(roleUser))
+					.created_at(LocalDateTime.now())
+					.isEnabled(true)
+					.build();
+
+		userRepository.saveAll(List.of(u1,u2,u3,u4));
 
 		};
 

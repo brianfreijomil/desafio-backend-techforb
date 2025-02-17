@@ -31,8 +31,8 @@ public class SensorController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Boolean> disableEnableSensor(@PathVariable Long id) {
-        this.sensorsService.disableEnableSensor(id);
-        return new ResponseEntity<>(true, HttpStatus.OK);
+    public ResponseEntity<SensorOut> disableEnableSensor(@PathVariable Long id) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        return new ResponseEntity<>(this.sensorsService.disableEnableSensor(id,username), HttpStatus.OK);
     }
 }

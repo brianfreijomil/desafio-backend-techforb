@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class AuthLoginIn {
 
-    @NotBlank(message = "Debe ingresar un email")
+    @NotBlank(message = "Debe ingresar un correo electronico valido")
     private String email; /*por ahora mantengo el login con email basandome en el figma, es confuso el doc de FAQs (dni,username,etc)*/
     @NotBlank(message = "Debe ingresar una contraseña valida")
     private String password;

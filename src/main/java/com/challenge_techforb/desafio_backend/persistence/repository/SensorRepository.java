@@ -10,5 +10,7 @@ import java.util.List;
 @Repository
 public interface SensorRepository extends JpaRepository<SensorEntity,Long> {
 
+    long countByIsEnabledFalse();
+
     List<SensorEntity> findAllByPlant(PlantEntity plantEntity);
 }

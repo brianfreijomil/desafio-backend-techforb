@@ -42,6 +42,12 @@ public class UserDetailServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
+    /**
+     * load a user by "email"
+     *
+     * @param email
+     * @return userdetails
+     */
     @Override
     public UserDetails loadUserByUsername(String email) {
 
@@ -56,6 +62,11 @@ public class UserDetailServiceImpl implements UserDetailsService {
         return new User(userEntity.getUsername(), userEntity.getPassword(), authorityList);
     }
 
+    /**
+     * register a new user
+     * @param request
+     * @return status of registration
+     */
     public AuthResponse createUser(AuthCreateUserIn request) {
 
         String email = request.getEmail();
@@ -65,8 +76,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (this.userRepository.existsByEmailIgnoreCase(email)) throw new ConflictExistException("El email ingresado ya esta en uso");
         if (this.userRepository.existsByUsernameIgnoreCase(username)) throw new ConflictExistException("El nombre de usuario ingresado ya esta en uso");
 
-//        List<String> rolesRequest = request.getRoleRequest().getRoleListName();
-//
         //por ahora le doy a todos rol de admin
         List<RoleEntity> roleEntityList = roleRepository.findRoleEntitiesByRoleEnumIn(List.of("ADMIN")).stream().collect(Collectors.toList());
 
@@ -83,20 +92,16 @@ public class UserDetailServiceImpl implements UserDetailsService {
         );
 
         UserEntity userSaved = userRepository.save(userEntity);
-        ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-        userSaved.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_".concat(role.getRoleEnum().name()))));
-        userSaved.getRoles().stream().flatMap(role -> role.getPermissionList().stream()).forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission.getName())));
-
-        SecurityContext securityContextHolder = SecurityContextHolder.getContext();
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userSaved.getUsername(), null, authorities);
-
-        String accessToken = jwtUtils.createToken(authentication);
-
-        AuthResponse authResponse = new AuthResponse(username, "Registro de usuario exitoso!", accessToken, true);
-        return authResponse;
+        return AuthResponse.builder().message("Registro de usuario exitoso!").status(true).build();
     }
 
+    /**
+     * login a user by credentials
+     *
+     * @param authLoginRequest
+     * @return login session info
+     */
     public AuthResponse loginUser(AuthLoginIn authLoginRequest) {
 
         String email = authLoginRequest.getEmail();
@@ -110,20 +115,33 @@ public class UserDetailServiceImpl implements UserDetailsService {
         return authResponse;
     }
 
+    /**
+     * authenticate a user by credentials
+     *
+     * @param email
+     * @param password
+     * @return authentication
+     */
     public Authentication authenticate(String email, String password) {
         UserDetails userDetails = this.loadUserByUsername(email);
 
         if (userDetails == null) {
-            throw new BadCredentialsException(String.format("Usuario o contraseña no válidos."));
+            throw new BadCredentialsException(String.format("Usuario o contraseña incorrectos."));
         }
 
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            throw new BadCredentialsException("Usuario o contraseña no válidos.");
+            throw new BadCredentialsException("Usuario o contraseña incorrectos.");
         }
 
         return new UsernamePasswordAuthenticationToken(userDetails.getUsername(), password, userDetails.getAuthorities());
     }
 
+    /**
+     * get a user info by username
+     *
+     * @param username
+     * @return user info
+     */
     public UserInfoOut getUserInfo(String username) {
         UserEntity user = this.userRepository.findByUsernameIgnoreCase(username).orElseThrow(()-> new EntityNotFoundException("el usuario."));
         return UserInfoOut.builder()

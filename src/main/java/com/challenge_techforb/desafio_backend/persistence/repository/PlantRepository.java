@@ -21,6 +21,7 @@ public interface PlantRepository extends JpaRepository<PlantEntity,Long> {
             "LEFT JOIN sensors_readings sr ON s.id = sr.sensor_entity_id " +
             "LEFT JOIN readings r ON sr.readings_id = r.id " +
             "WHERE p.user_id =:userId " +
+            "AND s.is_enabled = true " +
             "GROUP BY p.id, r.alert_type " +
             "ORDER BY p.id, r.alert_type", nativeQuery = true)
     List<IAllPlantsAndSumReadingsByAlertType> findAllByIdAAndSumReadingAlertType(@Param("userId") Long userId);
@@ -28,4 +29,5 @@ public interface PlantRepository extends JpaRepository<PlantEntity,Long> {
     List<PlantEntity> findAllByUser(UserEntity userEntity);
 
     Boolean existsByNameIgnoreCaseAndCountryIgnoreCase(String name, String country);
+
 }

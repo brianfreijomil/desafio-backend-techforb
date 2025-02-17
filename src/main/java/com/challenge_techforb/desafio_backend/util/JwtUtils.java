@@ -24,6 +24,12 @@ public class JwtUtils {
     @Value("${security.jwt.user.generator}")
     private String userGenerator;
 
+    /**
+     * create a token by authentication
+     *
+     * @param authentication
+     * @return jwt token
+     */
     public String createToken(Authentication authentication) {
         Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
 
@@ -45,6 +51,12 @@ public class JwtUtils {
         return jwtToken;
     }
 
+    /**
+     * validate a token
+     *
+     * @param token
+     * @return jwt decoded
+     */
     public DecodedJWT validateToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
@@ -60,10 +72,23 @@ public class JwtUtils {
         }
     }
 
+    /**
+     * extract username from decoded jwt
+     *
+     * @param decodedJWT
+     * @return username
+     */
     public String extractUsername(DecodedJWT decodedJWT){
         return decodedJWT.getSubject().toString();
     }
 
+    /**
+     * get specific claim value by name
+     *
+     * @param decodedJWT
+     * @param claimName
+     * @return claim
+     */
     public Claim getSpecificClaim(DecodedJWT decodedJWT, String claimName) {
         return decodedJWT.getClaim(claimName);
     }

@@ -13,4 +13,5 @@ import java.util.Set;
 public class AllSensorsReadingsStatsOut {
 
     private Set<ReadingOut> readings;
+    private Integer sensorsDisabled;
 }

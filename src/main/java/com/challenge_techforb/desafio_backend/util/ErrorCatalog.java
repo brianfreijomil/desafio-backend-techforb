@@ -2,6 +2,9 @@ package com.challenge_techforb.desafio_backend.util;
 
 import lombok.Getter;
 
+/**
+ * Catalog of error types and default messages
+ */
 @Getter
 public enum ErrorCatalog {
 

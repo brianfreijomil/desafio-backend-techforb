@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AuthCreateUserIn {
 
-    @NotBlank(message = "Debe ingresar un email")
+    @NotBlank(message = "Debe ingresar un correo electronico valido")
     @Email(message = "Formato de correo electronico invalido")
     private String email;
     @NotBlank(message = "Debe ingresar un nombre de usuario")
