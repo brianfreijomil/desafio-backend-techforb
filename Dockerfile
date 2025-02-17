@@ -1,4 +1,4 @@
-FROM openjdk:19-jdk AS build
+FROM openjdk:21-jdk AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src src
