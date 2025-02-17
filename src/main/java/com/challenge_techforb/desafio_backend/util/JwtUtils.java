@@ -30,7 +30,7 @@ public class JwtUtils {
      * @param authentication
      * @return jwt token
      */
-    public String createToken(Authentication authentication) {
+    public String createToken(Authentication authentication, String email) {
         Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
 
         String username = authentication.getPrincipal().toString();
@@ -43,6 +43,7 @@ public class JwtUtils {
                 .withIssuer(this.userGenerator)
                 .withSubject(username)
                 .withClaim("authorities", authorities)
+                .withClaim("email", email)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + 1800000))
                 .withJWTId(UUID.randomUUID().toString())
