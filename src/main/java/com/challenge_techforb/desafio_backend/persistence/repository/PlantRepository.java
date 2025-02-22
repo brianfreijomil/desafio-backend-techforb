@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PlantRepository extends JpaRepository<PlantEntity,Long> {
@@ -27,6 +28,8 @@ public interface PlantRepository extends JpaRepository<PlantEntity,Long> {
     List<IAllPlantsAndSumReadingsByAlertType> findAllByIdAAndSumReadingAlertType(@Param("userId") Long userId);
 
     List<PlantEntity> findAllByUser(UserEntity userEntity);
+
+    Optional<PlantEntity> findByNameIgnoreCaseAndCountryIgnoreCase(String name, String country);
 
     Boolean existsByNameIgnoreCaseAndCountryIgnoreCase(String name, String country);
 

@@ -155,12 +155,16 @@ public class PlantService {
      */
     @Transactional
     public PlantInfoOut createPlant(PlantIn input, String username) {
-        //check unique (plant - country)
-        Boolean existByNameAndCountry = this.plantRepository.existsByNameIgnoreCaseAndCountryIgnoreCase(input.getName(), input.getCountry());
-        if (existByNameAndCountry) throw new ConflictExistException("Ya existe una planta con el nombre: " + input.getName() + ", para el pais: " + input.getCountry());
         //Check user
         UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
+        //check unique (plant - country)
+        Optional<PlantEntity> plantExisting = this.plantRepository.findByNameIgnoreCaseAndCountryIgnoreCase(input.getName(), input.getCountry());
+        //correccion reciente, como no se la logica de negocio especifica asumo que
+        // puede haber plantas con mismo nombre y pais mientras sean usuarios distintos,
+        //en caso de que todos los usuarios puedan ver las plantas creadas por otros usuarios la logica cambia y no hace falta verificar mismo usuario
+        if (!plantExisting.isEmpty() && plantExisting.get().getUser().getId().equals(user.getId())) throw new ConflictExistException("Ya existe una planta con el nombre: " + input.getName() + ", para el pais: " + input.getCountry());
+
         //create plant
         try {
             PlantEntity newPlant = new PlantEntity(input.getName(),input.getCountry(),user);

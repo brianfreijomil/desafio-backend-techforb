@@ -52,7 +52,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) {
 
         UserEntity userEntity = this.userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new BadCredentialsException(String.format("Usuario o contraseña no válidos.")));
+                .orElseThrow(() -> new BadCredentialsException(String.format("Usuario o contraseña incorrectos.")));
 
         List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
 
