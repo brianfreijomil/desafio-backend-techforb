@@ -159,7 +159,7 @@ public class PlantService {
         UserEntity user = this.userRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(()-> new EntityNotFoundException("Usuario no encontrado"));
         //check unique (plant - country)
-        Optional<PlantEntity> plantExisting = this.plantRepository.findByNameIgnoreCaseAndCountryIgnoreCase(input.getName(), input.getCountry());
+        Optional<PlantEntity> plantExisting = this.plantRepository.findByNameIgnoreCaseAndCountryIgnoreCaseAndUser(input.getName(), input.getCountry(), user);
         //correccion reciente, como no se la logica de negocio especifica asumo que
         // puede haber plantas con mismo nombre y pais mientras sean usuarios distintos,
         //en caso de que todos los usuarios puedan ver las plantas creadas por otros usuarios la logica cambia y no hace falta verificar mismo usuario
@@ -252,10 +252,42 @@ public class PlantService {
             plantSaved.setName(input.getName());
             plantSaved.setCountry(input.getCountry());
             plantSaved = this.plantRepository.save(plantSaved);
+
+            ReadingOut ok = new ReadingOut(null,0,AlertTypeEnum.OK);
+            ReadingOut medium = new ReadingOut(null,0,AlertTypeEnum.MEDIUM);
+            ReadingOut red = new ReadingOut(null,0,AlertTypeEnum.RED);
+
             return PlantInfoOut.builder()
                     .id(plantSaved.getId())
                     .name(plantSaved.getName())
                     .country(plantSaved.getCountry())
+                    .sensors(plantSaved.getSensors().stream().map(s -> SensorOut.builder()
+                            .id(s.getId())
+                            .type(s.getType().toString())
+                            .isEnabled(s.getIsEnabled())
+                            .sensorOk(new ReadingOut(s.getReadings()
+                                    .stream()
+                                    .filter(r -> r.getAlertType().toString().equalsIgnoreCase("OK"))
+                                    .findFirst()
+                                    .get())
+                            )
+                            .mediumAlert(new ReadingOut(s.getReadings()
+                                    .stream()
+                                    .filter(r -> r.getAlertType().toString().equalsIgnoreCase("MEDIUM"))
+                                    .findFirst()
+                                    .get())
+                            )
+                            .redAlert(new ReadingOut(s.getReadings()
+                                    .stream()
+                                    .filter(r -> r.getAlertType().toString().equalsIgnoreCase("RED"))
+                                    .findFirst()
+                                    .get())
+                            )
+                            .build()).collect(Collectors.toList())
+                    )
+                    .sensorOk(ok)
+                    .mediumAlert(medium)
+                    .redAlert(red)
                     .build();
         } catch (Exception err) {
             throw new ConflictPersistException(err.getMessage());

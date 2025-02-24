@@ -29,7 +29,7 @@ public interface PlantRepository extends JpaRepository<PlantEntity,Long> {
 
     List<PlantEntity> findAllByUser(UserEntity userEntity);
 
-    Optional<PlantEntity> findByNameIgnoreCaseAndCountryIgnoreCase(String name, String country);
+    Optional<PlantEntity> findByNameIgnoreCaseAndCountryIgnoreCaseAndUser(String name, String country, UserEntity user);
 
     Boolean existsByNameIgnoreCaseAndCountryIgnoreCase(String name, String country);
 
